@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz de Informática</title>
+  <style>
+    :root {
+      --main-bg: #121212;
+      --container-bg: #1e1e1e;
+      --primary-color: #00bcd4;
+      --secondary-color: #ff4081;
+      --text-color: #fff;
+      --border-radius: 12px;
+      --font-main: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--main-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background-color: var(--container-bg);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      max-width: 700px;
+      width: 100%;
+      margin: auto;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+
+    label, input, button {
+      font-size: 1rem;
+    }
+
+    input {
+      margin: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      margin: 0.3rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .question {
+      margin-bottom: 1rem;
+    }
+
+    .options button {
+      display: block;
+      margin: 0.5rem auto;
+      background-color: #333;
+      width: 100%;
+      padding: 0.7rem;
+    }
+
+    .correct {
+      background-color: #2ecc71 !important;
+    }
+
+    .incorrect {
+      background-color: #e74c3c !important;
+      opacity: 0.7;
+    }
+
+    #timer {
+      font-size: 1.2rem;
+      color: var(--secondary-color);
+    }
+
+    #score {
+      font-size: 1.5rem;
+      color: #0f0;
+    }
+
+    img.question-img {
+      max-width: 100%;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="start-screen">
+    <img src="https://genioquiz.com.br/encontre-1-homem-a-maioria-nao-consegue/" alt="Logo do Quiz" style="width: 150px; margin-bottom: 1rem;">
+    <h1>Quiz de Informática</h1>
+    <label for="name">Nome:</label>
+    <input type="text" id="name" required>
+    <br>
+    <label for="numero">Número:</label>
+    <input type="text" id="numero" required>
+    <br>
+    <button onclick="iniciarQuiz()">Iniciar</button>
+  </div>
+
+  <div class="container hidden" id="quiz-screen">
+    <h2>Bem-vindo, <span id="user-name"></span>!</h2>
+    <div id="timer">Tempo restante: <span id="time">180</span>s</div>
+    <div id="question-container" class="question"></div>
+    <div class="options" id="options-container"></div>
+    <div style="margin-top: 1rem;">
+      <button onclick="pularPergunta()">Pular</button>
+      <button onclick="removerOpcoes()">Remover Opções</button>
+      <button onclick="usarPista()">Usar Pista</button>
+      <button onclick="reiniciarQuiz()">Reiniciar</button>
+      <button onclick="sairDoJogo()">Sair</button>
+    </div>
+  </div>
+
+  <div class="container hidden" id="result-screen">
+    <h2>Resultado</h2>
+    <p id="score"></p>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "1. O que é hardware?",
+        options: {
+          a: "Programas de computador",
+          b: "Parte física do computador",
+          c: "Sistema operacional"
+        },
+        correct: "b",
+        
+      },
+      {
+        question: "2. O que é software?",
+        options: {
+          a: "Mouse e teclado",
+          b: "Sistema operacional e programas",
+          c: "Impressora"
+        },
+        correct: "b",
+        
+      },
+      {
+        question: "3. O que é um sistema operacional?",
+        options: {
+          a: "Dispositivo de entrada",
+          b: "Programa que gerencia o computador",
+          c: "Componente de hardware"
+        },
+        correct: "b",
+       
+      },
+      {
+      question: "4. Qual é a função de um firewall?",
+      options: {
+        a: "Aumentar a velocidade da internet",
+        b: "Controlar o acesso à rede",
+        c: "Substituir o antivírus"
+      },
+      correct: "b"
+    },
+      {
+        question: "5. O que é SQL?",
+        options: {
+          a: "Uma linguagem de marcação",
+          b: "Uma linguagem de consulta a bancos de dados",
+          c: "Um protocolo de segurança"
+        },
+        correct: "b"
+      },
+      {
+        question: "6. Qual das opções abaixo é um exemplo de ataque de phishing?",
+        options: {
+          a: "Usar um antivírus gratuito",
+          b: "Receber um e-mail falso solicitando senhas",
+          c: "Instalar atualizações do sistema"
+        },
+        correct: "b"
+      },
+      {
+        question: "7. O que é uma variável em programação?",
+        options: {
+          a: "Uma função que altera valores",
+          b: "Um local onde se armazena dados",
+          c: "Um tipo de erro"
+        },
+        correct: "b"
+      },
+      {
+        question: "8. Qual comando Git é usado para clonar um repositório?",
+        options: {
+          a: "git clone",
+          b: "git pull",
+          c: "git push"
+        },
+        correct: "a"
+      },
+      {
+        question: "9. O que é autenticação de dois fatores (2FA)?",
+        options: {
+          a: "Uma senha muito forte",
+          b: "Dois antivírus no mesmo computador",
+          c: "Verificação com dois métodos distintos"
+        },
+        correct: "c"
+      },
+      {
+        question: "10. Qual linguagem é usada para estilizar páginas web?",
+        options: {
+          a: "CSS",
+          b: "Java",
+          c: "SQL"
+        },
+        correct: "a"
+      },
+      {
+        question: "11. O que é um modem?",
+        options: {
+          a: "Um software de edição de vídeos",
+          b: "Um dispositivo que modula e demodula sinais para a comunicação na internet",
+          c: "Um tipo de memória volátil"
+        },
+        correct: "b"
+      },
+      {
+        question: "12. O que é um cookie na web?",
+        options: {
+          a: "Um tipo de malware",
+          b: "Um pequeno arquivo armazenado no navegador",
+          c: "Um protocolo de segurança"
+        },
+        correct: "b"
+      },
+      {
+        question: "13. O que é um banco de dados relacional?",
+        options: {
+          a: "Um banco de dados que armazena dados em tabelas",
+          b: "Um tipo de software antivírus",
+          c: "Um sistema operacional"
+        },
+        correct: "a"
+      },
+      {
+        question: "14. O que é um algoritmo?",
+        options: {
+          a: "Uma sequência de instruções para resolver um problema",
+          b: "Um tipo de vírus",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "15. O que é um ataque DDoS?",
+        options: {
+          a: "Um ataque que usa múltiplos sistemas para sobrecarregar um servidor",
+          b: "Um tipo de firewall",
+          c: "Uma técnica de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "16. O que é um proxy?",
+        options: {
+          a: "Um tipo de malware",
+          b: "Um servidor intermediário entre o usuário e a internet",
+          c: "Uma linguagem de programação"
+        },
+        correct: "b"
+      },
+      {
+        question: "17. O que é um sistema de controle de versão?",
+        options: {
+          a: "Um software para editar vídeos",
+          b: "Um sistema que registra alterações em arquivos",
+          c: "Um tipo de firewall"
+        },
+        correct: "b"
+      },
+      {
+        question: "18. O que é um script?",
+        options: {
+          a: "Um tipo de vírus",
+          b: "Um conjunto de instruções executadas por um interpretador",
+          c: "Uma linguagem de marcação"
+        },
+        correct: "b"
+      },
+      {
+        question: "19. O que é um URL?",
+        options: {
+          a: "Um tipo de arquivo",
+          b: "Um endereço na web",
+          c: "Uma linguagem de programação"
+        },
+        correct: "b"
+      },
+      {
+        question: "20. O que é um backup?",
+        options: {
+          a: "Uma cópia de segurança dos dados",
+          b: "Um tipo de malware",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "21. O que é um firewall?",
+        options: {
+          a: "Um software que protege a rede contra acessos não autorizados",
+          b: "Um tipo de malware",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "22. O que é um endereço IP?",
+        options: {
+          a: "Um tipo de vírus",
+          b: "Um identificador único para dispositivos na rede",
+          c: "Uma linguagem de programação"
+        },
+        correct: "b"
+      },
+      {
+        question: "23. O que é um sistema de gerenciamento de conteúdo (CMS)?",
+        options: {
+          a: "Um software para gerenciar e publicar conteúdo na web",
+          b: "Um tipo de malware",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "24. O que é um ataque de força bruta?",
+        options: {
+          a: "Um ataque que tenta todas as combinações possíveis de senhas",
+          b: "Um tipo de firewall",
+          c: "Uma linguagem de programação"
+        },          
+        correct: "a"
+      },
+      {
+        question: "25. O que é um antivírus?",
+        options: {
+          a: "Um software que protege contra vírus e malware",
+          b: "Um tipo de firewall",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "26. O que é um sistema de gerenciamento de banco de dados (SGBD)?",
+        options: {
+          a: "Um software para gerenciar bancos de dados",
+          b: "Um tipo de malware",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+      {
+        question: "27. O que é um ataque de engenharia social?",            
+        options: {
+          a: "Um ataque que explora a confiança humana para obter informações",
+          b: "Um tipo de firewall",
+          c: "Uma linguagem de programação"
+        },
+        correct: "a"
+      },
+        {
+            question: "28. O que é um sistema de arquivos?",
+            options: {
+            a: "Um software para gerenciar arquivos",
+            b: "Uma estrutura que organiza e armazena dados em um dispositivo",
+            c: "Uma linguagem de programação"
+            },
+            correct: "b"
+        },
+        {
+            question: "29. O que é um ataque de malware?",
+            options: {
+            a: "Um ataque que usa software malicioso para danificar ou roubar dados",
+                
+            b: "Um tipo de firewall",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "30. O que é um ataque de phishing?",
+            options: {
+            a: "Um ataque que tenta enganar o usuário para obter informações confidenciais",
+            b: "Um tipo de firewall",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "31. O que é um sistema de gerenciamento de senhas?",
+            options: {
+            a: "Um software que armazena e gerencia senhas",
+            b: "Um tipo de malware",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "32. O que é um ataque de ransomware?",
+            options: {
+            a: "Um ataque que criptografa os dados e exige pagamento para desbloqueá-los",
+            b: "Um tipo de firewall",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "33. O que é um certificado SSL?",
+            options: {
+            a: "Um protocolo de segurança para criptografar dados na web",
+            b: "Um tipo de malware",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "34. O que é um ataque de spoofing?",
+            options: {      
+            a: "Um ataque que finge ser outra pessoa ou sistema para enganar o usuário",
+            b: "Um tipo de firewall",
+            c: "Uma linguagem de programação"
+            },
+
+            correct: "a"
+        },
+        {
+            question: "35. O que é um sistema de detecção de intrusões (IDS)?",
+            options: {
+            a: "Um software que monitora e analisa atividades suspeitas na rede",
+            b: "Um tipo de malware",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "36. O que é um ataque de SQL injection?",
+            options: {
+            a: "Um ataque que insere código SQL malicioso em um banco de dados",
+            b: "Um tipo de firewall",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "37. O que é um sistema de autenticação?",
+            options: {
+            a: "Um software que verifica a identidade do usuário",
+            b: "Um tipo de malware",
+            c: "Uma linguagem de programação"
+            },
+            correct: "a"
+        },
+        {
+            question: "38. O que é um ataque de cross-site scripting (XSS)?",
+            options: {
+                a: "Um ataque que injeta scripts maliciosos em páginas web",
+                b: "Um tipo de firewall",
+                c: "Uma linguagem de programação"
+                },
+                correct: "a"
+        } ,
+        {
+            question: "39. O que é um sistema de gerenciamento de identidade (IAM)?",
+            options: {
+                a: "Um software que gerencia identidades e acessos dos usuários",
+                b: "Um tipo de malware",
+                c: "Uma linguagem de programação"
+                },
+                correct: "a"
+        },
+        {
+            question: "40. O que é um ataque de zero-day?",
+            options: {
+                a: "Um ataque que explora uma vulnerabilidade desconhecida",
+                b: "Um tipo de firewall",
+                c: "Uma linguagem de programação"
+                },
+                correct: "a"
+        }   // Adicione mais perguntas com "image: 'img/xxx.png'"
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let timeLeft = 180;
+    let timerInterval;
+
+    function iniciarQuiz() {
+      const nome = document.getElementById("name").value.trim();
+      const numero = document.getElementById("numero").value.trim();
+
+      if (!nome || !numero) {
+        alert("Preencha todos os campos!");
+        return;
+      }
+
+      document.getElementById("start-screen").classList.add("hidden");
+      document.getElementById("quiz-screen").classList.remove("hidden");
+      document.getElementById("user-name").textContent = nome;
+
+      iniciarTimer();
+      mostrarPergunta();
+    }
+
+    function iniciarTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("time").textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          mostrarResultado();
+        }
+      }, 1000);
+    }
+
+    function mostrarPergunta() {
+      if (currentQuestion >= questions.length) {
+        clearInterval(timerInterval);
+        mostrarResultado();
+        return;
+      }
+
+      const q = questions[currentQuestion];
+      const questionContainer = document.getElementById("question-container");
+      questionContainer.innerHTML = ""; // Limpa a pergunta anterior
+
+      const questionText = document.createElement("div");
+      questionText.textContent = q.question;
+      questionContainer.appendChild(questionText);
+
+      if (q.image) {
+        const img = document.createElement("img");
+        img.src = q.image;
+        img.alt = "Imagem da pergunta";
+        img.className = "question-img";
+        questionContainer.appendChild(img);
+      }
+
+      const optionsDiv = document.getElementById("options-container");
+      optionsDiv.innerHTML = "";
+
+      for (const key in q.options) {
+        const btn = document.createElement("button");
+        btn.textContent = `${key.toUpperCase()}: ${q.options[key]}`;
+        btn.onclick = () => verificarResposta(key);
+        optionsDiv.appendChild(btn);
+      }
+    }
+
+    function verificarResposta(selected) {
+      const q = questions[currentQuestion];
+      const optionsDiv = document.getElementById("options-container");
+      const buttons = optionsDiv.querySelectorAll("button");
+
+      buttons.forEach((btn) => {
+        const optKey = btn.textContent[0].toLowerCase();
+        btn.disabled = true;
+
+        if (optKey === q.correct) {
+          btn.classList.add("correct");
+        } else if (optKey === selected) {
+          btn.classList.add("incorrect");
+        }
+      });
+
+      if (selected === q.correct) {
+        score++;
+      }
+
+      setTimeout(() => {
+        currentQuestion++;
+        mostrarPergunta();
+      }, 1000);
+    }
+
+    function mostrarResultado() {
+      document.getElementById("quiz-screen").classList.add("hidden");
+      document.getElementById("result-screen").classList.remove("hidden");
+      document.getElementById("score").textContent = `Pontuação: ${score} de ${questions.length}`;
+    }
+
+    function pularPergunta() {
+      currentQuestion++;
+      mostrarPergunta();
+    }
+
+    function removerOpcoes() {
+      const q = questions[currentQuestion];
+      const optionsDiv = document.getElementById("options-container");
+      const keys = Object.keys(q.options).filter(k => k !== q.correct);
+      const toRemove = keys.sort(() => 0.5 - Math.random()).slice(0, 1); // remove 1 errada
+
+      const buttons = optionsDiv.querySelectorAll("button");
+      buttons.forEach(btn => {
+        const key = btn.textContent[0].toLowerCase();
+        if (toRemove.includes(key)) {
+          btn.disabled = true;
+          btn.style.opacity = 0.4;
+        }
+      });
+    }
+
+    function usarPista() {
+      const q = questions[currentQuestion];
+      alert(`Dica: A opção correta começa com "${q.correct.toUpperCase()}"`);
+    }
+
+    function reiniciarQuiz() {
+      location.reload();
+    }
+
+    function sairDoJogo() {
+      clearInterval(timerInterval);
+      alert("Você saiu do quiz.");
+      location.reload();
+    }
+  </script>
+</body>
+</html>
